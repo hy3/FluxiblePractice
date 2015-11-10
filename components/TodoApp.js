@@ -1,8 +1,6 @@
 import React from 'react';
-import Nav from './Nav';
 import TodoStore from '../stores/TodoStore';
 import { connectToStores, provideContext } from 'fluxible-addons-react';
-import pages from '../configs/routes';
 
 const ENTER_KEY = 13;
 
