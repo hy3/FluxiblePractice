@@ -7,10 +7,9 @@ import pages from '../configs/routes';
 const ENTER_KEY = 13;
 
 class TodoApp extends React.Component {
-    getInitialState() {
-        return {
-            nowShowing: 'ALL_TODOS'
-        };
+    constructor(props) {
+        super(props);
+        this.state = {nowShowing: 'ALL_TODOS'};
     }
     handleNewTodoKeyDown(event) {
         if (event.which !== ENTER_KEY) {

@@ -6,7 +6,6 @@
  */
 
 import express from 'express';
-import favicon from 'serve-favicon'
 import bodyParser from 'body-parser';
 import serialize from 'serialize-javascript';
 import cookieParser from 'cookie-parser';
@@ -14,12 +13,12 @@ import csrf from 'csurf';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
 import app from './app';
+import showTodos from './actions/showTodos'
 import HtmlComponent from './components/Html';
 import { createElementWithContext } from 'fluxible-addons-react';
 
 var server = express();
 server.set('state namespace', 'App');
-server.use(favicon(__dirname + '/../favicon.ico'));
 server.use('/public', express.static(__dirname + '/build'));
 server.use('/assets', express.static(__dirname + '/assets'));
 server.use(cookieParser());

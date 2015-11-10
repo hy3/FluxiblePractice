@@ -2,6 +2,7 @@ import BaseStore from 'fluxible/addons/BaseStore';
 
 class TodoStore extends BaseStore {
     constructor(dispatcher) {
+        super(dispatcher);
         this.todos = [];
     }
     receiveTodos(todos) {
