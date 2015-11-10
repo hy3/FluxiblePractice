@@ -6,60 +6,66 @@
  */
 
 import express from 'express';
-import compression from 'compression';
+import favicon from 'serve-favicon'
 import bodyParser from 'body-parser';
-import path from 'path';
 import serialize from 'serialize-javascript';
-import {navigateAction} from 'fluxible-router';
-import debugLib from 'debug';
+import cookieParser from 'cookie-parser';
+import csrf from 'csurf';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
 import app from './app';
 import HtmlComponent from './components/Html';
 import { createElementWithContext } from 'fluxible-addons-react';
-const env = process.env.NODE_ENV;
 
-const debug = debugLib('fluxiblepractice');
-
-const server = express();
-server.use('/public', express.static(path.join(__dirname, '/build')));
-server.use(compression());
+var server = express();
+server.set('state namespace', 'App');
+server.use(favicon(__dirname + '/../favicon.ico'));
+server.use('/public', express.static(__dirname + '/build'));
+server.use('/assets', express.static(__dirname + '/assets'));
+server.use(cookieParser());
 server.use(bodyParser.json());
+server.use(csrf({cookie: true}));
 
-server.use((req, res, next) => {
-    const context = app.createContext();
 
-    debug('Executing navigate action');
-    context.getActionContext().executeAction(navigateAction, {
-        url: req.url
-    }, (err) => {
+// Get access to the fetchr plugin instance
+var fetchrPlugin = app.getPlugin('FetchrPlugin');
+
+// Register our todos REST service
+fetchrPlugin.registerService(require('./services/todo'));
+
+// Set up the fetchr middleware
+server.use(fetchrPlugin.getXhrPath(), fetchrPlugin.getMiddleware());
+
+// Every other request gets the app bootstrap
+server.use(function (req, res, next) {
+    var context = app.createContext({
+        req: req, // The fetchr plugin depends on this
+        xhrContext: {
+            _csrf: req.csrfToken() // Make sure all XHR requests have the CSRF token
+        }
+    });
+
+    context.executeAction(showTodos, {}, function (err) {
         if (err) {
             if (err.statusCode && err.statusCode === 404) {
-                // Pass through to next middleware
-                next();
-            } else {
-                next(err);
+                return next();
             }
-            return;
+            else {
+                return next(err);
+            }
         }
 
-        debug('Exposing context state');
-        const exposed = 'window.App=' + serialize(app.dehydrate(context)) + ';';
+        var exposed = 'window.App=' + serialize(app.dehydrate(context)) + ';';
 
-        debug('Rendering Application component into html');
-        const markup = ReactDOM.renderToString(createElementWithContext(context));
-        const htmlElement = React.createElement(HtmlComponent, {
-            clientFile: env === 'production' ? 'main.min.js' : 'main.js',
-            context: context.getComponentContext(),
+        var componentContext = context.getComponentContext();
+        var htmlElement = React.createElement(HtmlComponent, {
             state: exposed,
-            markup: markup
+            markup: ReactDOM.renderToString(createElementWithContext(context)),
+            context: componentContext
         });
-        const html = ReactDOM.renderToStaticMarkup(htmlElement);
+        var html = ReactDOM.renderToStaticMarkup(htmlElement);
 
-        debug('Sending markup');
-        res.type('html');
-        res.write('<!DOCTYPE html>' + html);
-        res.end();
+        res.send(html);
     });
 });
 

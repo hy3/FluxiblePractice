@@ -1,15 +1,20 @@
 import Fluxible from 'fluxible';
-import Application from './components/Application';
-import ApplicationStore from './stores/ApplicationStore';
-import RouteStore from './stores/RouteStore';
+import TodoApp from './components/TodoApp';
+import TodoStore from './stores/TodoStore';
+import PageStore from './stores/PageStore';
+import fetchrPlugin from 'fluxible-plugin-fetchr';
 
 // create new fluxible instance
 const app = new Fluxible({
-    component: Application
+    component: TodoApp
 });
 
-// register stores
-app.registerStore(RouteStore);
-app.registerStore(ApplicationStore);
+app.plug(fetchrPlugin({
+    xhrPath: '/api'
+}));
 
-module.exports = app;
+// register stores
+app.registerStore(TodoStore);
+app.registerStore(PageStore);
+
+export default app;
