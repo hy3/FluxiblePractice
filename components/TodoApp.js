@@ -1,14 +1,22 @@
 import React from 'react';
-import TodoStore from '../stores/TodoStore';
 import { connectToStores, provideContext } from 'fluxible-addons-react';
+import TodoStore from '../stores/TodoStore';
+import TodoItem from './TodoItem';
+import Footer from './Footer';
+import createTodo from '../actions/createTodo';
+import updateTodo from '../actions/updateTodo';
+import deleteTodo from '../actions/deleteTodo';
+import toggleAll from '../actions/toggleAll';
 
 const ENTER_KEY = 13;
 
 class TodoApp extends React.Component {
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
+        this.context = context;
         this.state = {nowShowing: 'ALL_TODOS'};
     }
+
     handleNewTodoKeyDown(event) {
         if (event.which !== ENTER_KEY) {
             return;
@@ -25,10 +33,12 @@ class TodoApp extends React.Component {
             this.refs.newField.value = '';
         }
     }
+
     changeFilter(filter, event) {
         this.setState({ nowShowing: filter });
         event.preventDefault();
     }
+
     clearCompleted() {
         var ids = this.props.items.filter(function (todo) {
             return todo.completed;
@@ -40,12 +50,14 @@ class TodoApp extends React.Component {
             ids: ids
         });
     }
+
     toggleAll(event) {
         var checked = event.target.checked;
         this.context.executeAction(toggleAll, {
             checked: checked
         });
     }
+
     toggle(todo) {
         this.context.executeAction(updateTodo, {
             id: todo.id,
@@ -53,17 +65,20 @@ class TodoApp extends React.Component {
             text: todo.text
         });
     }
+
     destroy(todo) {
         this.context.executeAction(deleteTodo, {
             ids: [todo.id]
         });
     }
+
     edit(todo, callback) {
         // refer TodoItem.handleEdit for the reasoning behind callback
         this.setState({ editing: todo.id }, function () {
             callback();
         });
     }
+
     save(todo, completed, text) {
         this.context.executeAction(updateTodo, {
             id: todo.id,
@@ -73,9 +88,11 @@ class TodoApp extends React.Component {
 
         this.setState({ editing: null });
     }
+
     cancel() {
         this.setState({ editing: null });
     }
+
     render() {
         var todos = this.props.items;
         var main;
@@ -102,7 +119,7 @@ class TodoApp extends React.Component {
                     onEdit={this.edit.bind(this, todo)}
                     editing={this.state.editing === todo.id}
                     onSave={this.save.bind(this, todo)}
-                    onCancel={this.cancel}
+                    onCancel={this.cancel.bind(this)}
                 />
             );
         }, this);
@@ -118,8 +135,8 @@ class TodoApp extends React.Component {
                 count={activeTodoCount}
                 completedCount={completedCount}
                 nowShowing={this.state.nowShowing}
-                onClearCompleted={this.clearCompleted}
-                onFilterChange={this.changeFilter}
+                onClearCompleted={this.clearCompleted.bind(this)}
+                onFilterChange={this.changeFilter.bind(this)}
             />;
         }
 
@@ -129,7 +146,7 @@ class TodoApp extends React.Component {
                     <input
                         id="toggle-all"
                         type="checkbox"
-                        onChange={this.toggleAll}
+                        onChange={this.toggleAll.bind(this)}
                         checked={activeTodoCount === 0}
                     />
                     <ul id="todo-list">
@@ -147,7 +164,7 @@ class TodoApp extends React.Component {
                         ref="newField"
                         id="new-todo"
                         placeholder="What needs to be done?"
-                        onKeyDown={this.handleNewTodoKeyDown}
+                        onKeyDown={this.handleNewTodoKeyDown.bind(this)}
                         autoFocus={true}
                     />
                 </header>
@@ -157,6 +174,11 @@ class TodoApp extends React.Component {
         );
     }
 }
+
+TodoApp.contextTypes = {
+    getStore:      React.PropTypes.func.isRequired,
+    executeAction: React.PropTypes.func.isRequired
+};
 
 export default provideContext(connectToStores(
     TodoApp,

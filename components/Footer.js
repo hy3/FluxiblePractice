@@ -7,7 +7,7 @@ class Footer extends React.Component {
         var activeTodoLabel = 'item' + (this.props.count > 1 ? 's' : '');
         var clearButton;
 
-        if (props.completedCount > 0) {
+        if (this.props.completedCount > 0) {
             clearButton = (
                 <button
                     id="clear-completed"

@@ -5,8 +5,9 @@ const ESCAPE_KEY = 27;
 const ENTER_KEY = 13;
 
 class TodoItem extends React.Component {
-    getInitialState() {
-        return { editText: this.props.todo.text };
+    constructor(props) {
+        super(props);
+        this.state = { editText: props.todo.text };
     }
     handleSubmit(event) {
         var completed = this.props.todo.completed;
