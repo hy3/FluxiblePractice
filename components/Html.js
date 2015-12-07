@@ -21,7 +21,7 @@ class Html extends React.Component {
                     <p>Showing off <a href="http://fluxible.io">Fluxible</a></p>
                 </footer>
                 <script dangerouslySetInnerHTML={{__html: this.props.state}}></script>
-                <script src="/public/js/client.js" defer></script>
+                <script src={'/public/js/' + this.props.clientFile}></script>
             </body>
             </html>
         );
