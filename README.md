@@ -1,6 +1,8 @@
 # FluxiblePractice
 [Fluxible](http://fluxible.io/)の学習用に作成したリポジトリです。
-https://github.com/yahoo/flux-examples/tree/master/todoをベースに、あえてES6の形式へ書き換えてあります。
+
+https://github.com/yahoo/flux-examples/tree/master/todo
+をベースに、あえてES6の形式へ書き換えてあります。
 
 # インストール方法
 
